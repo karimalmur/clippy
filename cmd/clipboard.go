@@ -13,6 +13,10 @@ func WatchClipboard() {
 
 	go func() {
 		for data := range ch {
+			if !urlRegex.MatchString(string(data)) {
+				continue
+			}
+
 			println(string(data))
 		}
 	}()

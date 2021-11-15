@@ -27,8 +27,8 @@ func SetupTray() {
 	systray.SetTitle("Clippy")
 	systray.SetTooltip("Clipboard url logger")
 
-	enable := systray.AddMenuItem("Enable", "Enable")
-	enable.Disable()
+	resume := systray.AddMenuItem("Resume", "Resume")
+	resume.Disable()
 
 	pause := systray.AddMenuItem("Pause", "Pause")
 	pauseind := pause.AddSubMenuItem("Indefinitely", "Pause Indefinitely")
@@ -40,17 +40,17 @@ func SetupTray() {
 	go func() {
 		for {
 			select {
-			case <-enable.ClickedCh:
-				togglePause(pause, enable, 0)
+			case <-resume.ClickedCh:
+				togglePause(pause, resume, 0)
 				WatchClipboard()
 			case <-pauseind.ClickedCh:
-				togglePause(pause, enable, pauseDuration)
+				togglePause(pause, resume, pauseDuration)
 				TryCancelWatch()
 			case <-pause5.ClickedCh:
-				togglePause(pause, enable, pauseDuration5)
+				togglePause(pause, resume, pauseDuration5)
 				TryCancelWatch()
 			case <-pause10.ClickedCh:
-				togglePause(pause, enable, pauseDuration10)
+				togglePause(pause, resume, pauseDuration10)
 				TryCancelWatch()
 			case <-quit.ClickedCh:
 				systray.Quit()
@@ -68,9 +68,23 @@ func togglePause(pauseMenuItem *systray.MenuItem, resumeMenuItem *systray.MenuIt
 	if pauseMenuItem.Disabled() {
 		pauseMenuItem.Enable()
 		resumeMenuItem.Disable()
+
+		icon, err := ioutil.ReadFile("./assets/icon.ico")
+		if err != nil {
+			fmt.Print("Failed to open icon file", err)
+		}
+
+		systray.SetIcon(icon)
 	} else {
 		pauseMenuItem.Disable()
 		resumeMenuItem.Enable()
+
+		icon, err := ioutil.ReadFile("./assets/icon-gs.ico")
+		if err != nil {
+			fmt.Print("Failed to open icon file", err)
+		}
+
+		systray.SetIcon(icon)
 
 		if pauseDurationMinutes < math.MaxInt16 {
 			timer := time.NewTimer(time.Minute * pauseDurationMinutes)
